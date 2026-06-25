@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0f1a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>MSc AI — Deadlines & Progress</title>
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --panel: #131a2a;
+    --panel-2: #18213450;
+    --line: #243049;
+    --text: #e7ecf6;
+    --muted: #93a0bd;
+    --faint: #66728f;
+    --todo: #64748b;
+    --prog: #38bdf8;
+    --done: #34d399;
+    --overdue: #fb7185;
+    --today: #fbbf24;
+    --soon: #f59e0b;
+    --radius: 16px;
+    --shadow: 0 8px 30px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 80% -10%, #16213b 0%, var(--bg) 55%) fixed;
+    color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 22px 16px 80px; }
+  a { color: inherit; }
+
+  header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin-bottom: 6px; }
+  header.top h1 { font-size: 20px; margin: 0; letter-spacing: .2px; }
+  header.top .updated { color: var(--faint); font-size: 12px; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
+
+  /* summary stat strip */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+  .stat .n { font-size: 24px; font-weight: 700; line-height: 1.1; }
+  .stat .l { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .6px; margin-top: 2px; }
+  .stat.alert .n { color: var(--overdue); }
+  .stat.today .n { color: var(--today); }
+
+  /* controls */
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--panel); color: var(--muted);
+    border-radius: 999px; padding: 7px 13px; font-size: 13px; cursor: pointer; user-select: none;
+    display: inline-flex; align-items: center; gap: 7px; transition: .12s;
+  }
+  .chip:hover { border-color: #34507e; color: var(--text); }
+  .chip.active { color: #0b0f1a; font-weight: 650; }
+  .chip .dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+  .chip .count { font-size: 11px; opacity: .8; }
+  .controls .spacer { flex: 1; }
+  .toggle { color: var(--muted); font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .toggle input { accent-color: var(--prog); width: 16px; height: 16px; }
+
+  /* segment switch */
+  .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+  .seg button { border: 0; background: transparent; color: var(--muted); font-size: 13px; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+  .seg button.active { background: #243049; color: var(--text); }
+
+  /* timeline bucket */
+  .bucket { margin: 22px 0 6px; }
+  .bucket h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 0 0 10px; display: flex; align-items: center; gap: 9px; }
+  .bucket h2 .bar { height: 1px; background: var(--line); flex: 1; }
+  .bucket.urgent h2 { color: var(--overdue); }
+  .bucket.is-today h2 { color: var(--today); }
+
+  /* cards */
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--mc, #64748b);
+    border-radius: 14px; padding: 13px 15px; margin-bottom: 10px; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: 1fr auto; gap: 6px 14px; align-items: start;
+  }
+  .card.done { opacity: .55; }
+  .card .main { min-width: 0; }
+  .card .title-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .card .title { font-weight: 650; font-size: 15.5px; }
+  .card .mod {
+    font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--mc);
+    border: 1px solid color-mix(in srgb, var(--mc) 45%, transparent);
+    background: color-mix(in srgb, var(--mc) 14%, transparent);
+    padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+  }
+  .card .type { font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--faint); border: 1px solid var(--line); padding: 2px 7px; border-radius: 6px; }
+  .card .group { font-size: 11.5px; color: var(--faint); }
+  .card .weight { font-size: 12px; color: var(--muted); }
+  .card .stage { color: var(--muted); font-size: 13px; margin-top: 5px; }
+  .card .flag { margin-top: 7px; font-size: 12.5px; color: #fcd34d; background: #3a2f12; border: 1px solid #5b491c; padding: 6px 9px; border-radius: 8px; }
+  .card .meta { color: var(--faint); font-size: 12px; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+
+  .right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+  .due { font-variant-numeric: tabular-nums; }
+  .due .date { font-size: 13px; color: var(--text); }
+  .due .countdown { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .due.overdue .countdown { color: var(--overdue); font-weight: 650; }
+  .due.today .countdown { color: var(--today); font-weight: 650; }
+  .due.soon .countdown { color: var(--soon); font-weight: 600; }
+
+  .status-btn {
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--muted);
+    font-size: 12px; padding: 5px 11px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px; transition: .12s;
+  }
+  .status-btn .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .status-btn[data-s="todo"] .dot { background: var(--todo); }
+  .status-btn[data-s="in-progress"] .dot { background: var(--prog); }
+  .status-btn[data-s="done"] .dot { background: var(--done); }
+  .status-btn[data-s="in-progress"] { color: var(--prog); border-color: color-mix(in srgb, var(--prog) 40%, transparent); }
+  .status-btn[data-s="done"] { color: var(--done); border-color: color-mix(in srgb, var(--done) 40%, transparent); }
+
+  /* progress + subtasks */
+  .prog { margin-top: 9px; }
+  .prog .track { height: 6px; background: #0e1626; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .prog .fill { height: 100%; background: linear-gradient(90deg, var(--mc), color-mix(in srgb, var(--mc) 55%, #fff)); border-radius: 999px; }
+  .subtasks { margin: 9px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+  .subtasks li { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--muted); cursor: pointer; }
+  .subtasks li .box { width: 15px; height: 15px; border-radius: 4px; border: 1px solid var(--line); flex: none; margin-top: 1px; display: grid; place-items: center; font-size: 10px; color: var(--bg); }
+  .subtasks li.checked .box { background: var(--done); border-color: var(--done); }
+  .subtasks li.checked { color: var(--faint); text-decoration: line-through; }
+
+  /* module progress section */
+  .modgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .modcard { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--mc); border-radius: 14px; padding: 15px; }
+  .modcard h3 { margin: 0 0 2px; font-size: 16px; }
+  .modcard .code { color: var(--faint); font-size: 12px; }
+  .modcard .row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin: 11px 0 5px; }
+  .modcard .note { color: var(--faint); font-size: 12px; margin-top: 11px; line-height: 1.45; }
+  .seg-bar { height: 8px; border-radius: 999px; background: #0e1626; border: 1px solid var(--line); overflow: hidden; display: flex; }
+  .seg-bar i { height: 100%; display: block; }
+  .seg-bar i.done { background: var(--done); }
+  .seg-bar i.prog { background: var(--prog); }
+  .legend { display: flex; gap: 14px; margin-top: 8px; font-size: 11px; color: var(--faint); }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+  .empty { color: var(--faint); font-size: 13px; padding: 20px; text-align: center; border: 1px dashed var(--line); border-radius: 14px; }
+  footer { color: var(--faint); font-size: 12px; text-align: center; margin-top: 34px; line-height: 1.7; }
+  footer button { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: 12px; }
+
+  @media (max-width: 620px) {
+    .wrap { padding: 16px 12px 70px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .card { grid-template-columns: 1fr; }
+    .right { flex-direction: row; align-items: center; justify-content: space-between; text-align: left; width: 100%; }
+    .due { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>🎓 MSc AI — Deadlines &amp; Progress</h1>
+    <span class="updated">built 2026-06-25 19:31</span>
+  </header>
+  <p class="sub" id="sub"></p>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="seg" id="view" style="margin-bottom:14px">
+    <button data-view="timeline" class="active">📅 Timeline</button>
+    <button data-view="modules">📚 By module</button>
+  </div>
+
+  <div id="timeline-controls">
+    <div class="controls" id="modfilter"></div>
+    <div class="controls">
+      <div class="seg" id="statusfilter">
+        <button data-st="all" class="active">All</button>
+        <button data-st="todo">To do</button>
+        <button data-st="in-progress">In progress</button>
+      </div>
+      <span class="spacer"></span>
+      <label class="toggle"><input type="checkbox" id="showDone" /> Show done</label>
+    </div>
+  </div>
+
+  <main id="content"></main>
+
+  <footer>
+    <div>Status changes &amp; checkboxes save to this device only (localStorage). Dates come from <code>data.json</code>.</div>
+    <div><button id="resetBtn">Reset my saved progress</button></div>
+  </footer>
+</div>
+
+<script type="application/json" id="data">{"meta":{"title":"MSc AI — Deadlines & Progress","owner":"QMUL MSc AI","updated":"2026-06-25","note":"Source of truth for the dashboard. Edit this file, then run `python3 build.py` to regenerate index.html. Times are UK local. Items with `due: null` have no confirmed date yet (see `flag`)."},"modules":[{"id":"nndl","code":"ECS7037P","name":"Neural Nets & DL","short":"NN&DL","folder":"5 - Neural Nets & DL","accent":"#7c6cff","weeksDone":4,"weeksTotal":9,"weeksNote":"Weeks 1–4 complete; Week 5 (Pretrained Models & Transfer Learning) in progress. Theory runs to week 9 (Quiz 2 covers weeks 5–9).","items":[{"id":"nndl-group","title":"Form group of 2 for project","type":"milestone","weight":0,"due":null,"dueText":"Done","status":"done","stage":"Partnered with Katie (Group 10).","location":"","notes":"Project is done in pairs."},{"id":"nndl-quiz1","title":"Quiz 1","type":"quiz","weight":10,"due":"2026-06-25T13:00:00","dueText":"25 Jun, 13:00","status":"todo","stage":"Revision cheat-sheet ready (weeks 1–4, checked static HTML).","progress":80,"location":"Online","notes":"Weeks 1–4 theory."},{"id":"nndl-proposal","title":"Group project proposal (optional)","type":"proposal","weight":0,"due":"2026-06-26T17:00:00","dueText":"26 Jun, 17:00","status":"done","stage":"Submitted. Topic: CNN robustness for real-vs-AI image detection.","location":"","notes":"Stored at 5 - Neural Nets & DL/Assignment/group project/Group 10 Project Proposal.pdf"},{"id":"nndl-labs25","title":"Labs 2–5","type":"lab","weight":10,"due":"2026-07-03T17:00:00","dueText":"3 Jul, 17:00","status":"todo","stage":"Not started.","location":"QM+","notes":"Bundle of lab submissions."},{"id":"nndl-quiz2","title":"Quiz 2","type":"quiz","weight":10,"due":"2026-07-30T13:00:00","dueText":"30 Jul, 13:00","status":"todo","stage":"Not started — covers weeks 5–9.","location":"Online","notes":"Weeks 5–9 theory."},{"id":"nndl-labs69","title":"Labs 6–9","type":"lab","weight":10,"due":"2026-08-07T17:00:00","dueText":"7 Aug, 17:00","status":"todo","stage":"Not started.","location":"QM+","notes":"Bundle of lab submissions."},{"id":"nndl-project","title":"Group Project","type":"project","weight":60,"due":"2026-08-14T17:00:00","dueText":"14 Aug, 17:00","status":"todo","stage":"Proposal submitted (with Katie). Implementation not started — baseline vs augmentation-robust CNN on CIFAKE (PyTorch), tested across blur/noise degradation tiers.","location":"QM+","notes":"Largest single component of the module."}]},{"id":"risk","code":"ECS7005P","name":"Risk & Decision-Making","short":"Risk","folder":"6 - Risk & Decision","accent":"#f5a524","weeksDone":5,"weeksTotal":8,"weeksNote":"Weeks 1–5 complete. Course arc runs through week 8.","items":[{"id":"risk-test","title":"In-Person Test","type":"exam","weight":30,"due":"2026-07-13T15:00:00","dueText":"Mon 13 Jul, 15:00–17:00","status":"todo","stage":"Week 5 revision lab (consolidates weeks 1–3) done with official answers.","progress":30,"location":"In person — bring ID","notes":"Pen-and-paper. Notes allowed (no books). No electronic devices."},{"id":"risk-coursework","title":"Coursework Assignment","type":"coursework","weight":70,"due":null,"dueText":"Not released yet","status":"todo","stage":"Brief + deadline not released yet (confirmed 25 Jun). Watch QM+.","flag":"No release date yet — brief still to be published. Add the date here once it lands.","location":"QM+","notes":"Largest single component of the module (70%)."}]},{"id":"apps","code":"ECS7036P","name":"Applications of AI","short":"Apps","folder":"7 - Applications of AI","accent":"#22c55e","weeksDone":5,"weeksTotal":5,"weeksNote":"Weeks 1–5 complete.","items":[{"id":"apps-lab1","title":"Lab 1 submission (optional)","type":"lab","weight":0,"due":null,"dueText":"Optional · XP only","status":"in-progress","stage":"Optional — XP only, not compulsory. Answers drafted + code verified; package if you want the XP.","progress":60,"location":"QM+","notes":"Level-Up XP item — not graded, not required.","subtasks":[{"label":"Answers drafted (week 2/lab-1) + code verified","done":true},{"label":"Paste into docx template, fill name/ID","done":false},{"label":"Settle GenAI declaration","done":false},{"label":"Upload to QM+","done":false}]},{"id":"apps-group-form","title":"Form group of 3–4 for Group Project","type":"milestone","weight":0,"due":null,"dueText":"Done","status":"done","stage":"Group 10 locked in: you, Kaylab & Eric.","location":""},{"id":"apps-gp-proposal","title":"Group Project — Proposal","group":"Group Project (40%)","type":"proposal","weight":5,"due":"2026-06-26T23:59:00","dueText":"26 Jun, 23:59 GMT","status":"in-progress","stage":"Ported into required LaTeX template; Evaluation section written; refs fixed. Final fill + compile remaining.","progress":80,"location":"QM+ (PDF)","notes":"LaTeX template required. 1–3 pages / 800–1200 words, ≥3 published refs. GenAI permitted (module leader overrides brief).","subtasks":[{"label":"Draft written + stored","done":true},{"label":"Ported into required LaTeX template","done":true},{"label":"Evaluation section + 5 cites; bibliography (13 refs)","done":true},{"label":"Fill Author 2/3 names + 3 emails + final title","done":false},{"label":"Replace 'Name 2/3' in Contributions; proofread","done":false},{"label":"Compile to PDF (Overleaf/Colab)","done":false},{"label":"One member uploads PDF to QM+ before deadline","done":false}]},{"id":"apps-gp-report","title":"Group Project — Report + Implementation","group":"Group Project (40%)","type":"coursework","weight":20,"due":"2026-07-21T23:59:00","dueText":"21 Jul","status":"todo","stage":"Report LaTeX template macro fixed so it compiles. Content not started.","progress":5,"location":"QM+","notes":"Report (10%) + implementation (10%). 6–8 pages, abstract ≤250 words, cite every borrowed sentence/figure."},{"id":"apps-gp-viva","title":"Group Project — Presentation + Viva","group":"Group Project (40%)","type":"presentation","weight":15,"due":"2026-07-24T23:59:00","dueText":"24 Jul","status":"todo","stage":"Not started.","location":"","notes":"Scored individually."},{"id":"apps-mini-proposal","title":"Mini Project — Proposal","group":"Mini Project (60%)","type":"proposal","weight":5,"due":"2026-07-28T23:59:00","dueText":"28 Jul","status":"todo","stage":"Not started. Individual-project brief + templates not yet pulled from QM+.","flag":"Grab the individual-project brief + templates off QM+.","location":"QM+"},{"id":"apps-mini-report","title":"Mini Project — Report + Implementation","group":"Mini Project (60%)","type":"coursework","weight":35,"due":"2026-08-10T23:59:00","dueText":"10 Aug","status":"todo","stage":"Not started.","location":"QM+","notes":"Report (15%) + implementation (20%)."},{"id":"apps-mini-viva","title":"Mini Project — Presentation + Viva","group":"Mini Project (60%)","type":"presentation","weight":20,"due":"2026-08-14T23:59:00","dueText":"14 Aug","status":"todo","stage":"Not started.","location":"","notes":"Includes demo video."}]},{"id":"final","code":"Dissertation","name":"Final Project","short":"Final","folder":"Final Project","accent":"#38bdf8","weeksDone":0,"weeksTotal":0,"weeksNote":"Direction: fintech honesty-detection (LLM reasoning reliability). Status: planning. Supervisor: David Mguni (TBC).","items":[{"id":"final-supervisor","title":"Supervisor selection window closes","type":"admin","weight":0,"due":"2026-06-30T23:59:00","dueText":"30 Jun","status":"todo","stage":"In discussion with David Mguni. Allocation completes 10 Jul.","location":"QM+","notes":"Selection/adoption window opened 27 May, closes 30 Jun; supervisor allocation complete 10 Jul."},{"id":"final-definition","title":"Project Definition document","type":"milestone","weight":0,"due":"2026-07-24T23:59:00","dueText":"24 Jul","status":"todo","stage":"Not started. 3–4 pages + work-plan/Gantt.","location":"QMPlus","notes":"Not assessed but must be approved by supervisor."},{"id":"final-ethics","title":"Ethical approval application","type":"admin","weight":0,"due":null,"dueText":"If applicable — see 24 Sept session","status":"todo","stage":"Only required if research involves human participants. Ethics covered in the 24 Sept session; discuss with supervisor first.","flag":"No fixed date — apply via DSREC before any human-participant research. Likely N/A for an LLM/data project.","location":"EECS DSREC online form"},{"id":"final-draft","title":"Draft dissertation research paper","type":"milestone","weight":0,"due":"2026-11-06T23:59:00","dueText":"6 Nov","status":"todo","stage":"Not started.","location":"QMPlus","notes":"Not assessed — supervisor provides feedback."},{"id":"final-dissertation","title":"Final dissertation + reflective essay + supporting docs","type":"project","weight":100,"due":"2026-12-15T23:59:00","dueText":"15 Dec","status":"todo","stage":"Not started.","location":"QMPlus","notes":"Research-paper format + 5-page reflective essay. Assessed by supervisor + second examiner. 100% of the project."},{"id":"final-video","title":"Presentation Video","type":"presentation","weight":0,"due":"2026-12-16T23:59:00","dueText":"16 Dec","status":"todo","stage":"Not started.","location":"QMPlus","notes":"10-minute video (±10%). Part of the viva assessment."},{"id":"final-viva","title":"Viva Q&A session","type":"exam","weight":0,"due":"2027-01-07T00:00:00","dueText":"7–18 Jan 2027","status":"todo","stage":"Viva period 7–18 Jan 2027. Allocated 20-min slot, online.","location":"Online","notes":"Failure to attend = zero for the project."},{"id":"final-sess-defmethods","title":"Session: Project Definition & Research Methods","type":"session","weight":0,"due":"2026-07-09T10:00:00","dueText":"9 Jul, 10:00","status":"todo","stage":"Taught session — prep for the 24 Jul Project Definition deliverable.","location":"Laws 210, 10:00–11:30"},{"id":"final-sess-litreview","title":"Session: Literature Review & Plagiarism","type":"session","weight":0,"due":"2026-07-30T10:00:00","dueText":"30 Jul, 10:00","status":"todo","stage":"Taught session.","location":"Laws 210, 10:00–11:30"},{"id":"final-sess-deliverables","title":"Session: Project Deliverables & Ethics","type":"session","weight":0,"due":"2026-09-24T10:00:00","dueText":"24 Sep, 10:00","status":"todo","stage":"Taught session — covers ethics process.","location":"Room TBC, 10:00–11:30"}]}]}</script>
+<script>
+(function () {
+  "use strict";
+  const DATA = JSON.parse(document.getElementById("data").textContent);
+  const STORE_KEY = "mscai-dashboard-v1";
+  const now = new Date();
+
+  // ---- persistence (per device) -----------------------------------------
+  let store = {};
+  try { store = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { store = {}; }
+  const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {} };
+
+  // ---- flatten items, apply overrides ------------------------------------
+  const modById = {};
+  const items = [];
+  DATA.modules.forEach(m => {
+    modById[m.id] = m;
+    (m.items || []).forEach(it => {
+      const ov = store[it.id] || {};
+      items.push(Object.assign({}, it, {
+        moduleId: m.id,
+        accent: m.accent,
+        modShort: m.short,
+        status: ov.status || it.status,
+        subOverride: ov.sub || null,
+        dueDate: it.due ? new Date(it.due) : null,
+      }));
+    });
+  });
+
+  // ---- date helpers ------------------------------------------------------
+  const DAY = 86400000;
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  function daysUntil(d) { // whole days from today's date to the due date
+    const dd = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    return Math.round((dd - startOfToday) / DAY);
+  }
+  const fmtDate = d => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  const fmtTime = d => d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  function countdown(it) {
+    if (!it.dueDate) return "no date";
+    const days = daysUntil(it.dueDate);
+    const past = it.dueDate < now;
+    if (it.status === "done") return "done";
+    if (days < 0) return `${-days}d overdue`;
+    if (days === 0) return past ? "due — passed today" : "due today";
+    if (days === 1) return "tomorrow";
+    if (days <= 7) return `in ${days} days`;
+    if (days <= 28) return `in ${Math.round(days / 7)} wk`;
+    const months = Math.round(days / 30);
+    return `in ~${months} mo`;
+  }
+  function urgency(it) {
+    if (it.status === "done") return "done";
+    if (!it.dueDate) return "nodate";
+    const days = daysUntil(it.dueDate);
+    if (days < 0) return "overdue";
+    if (days === 0) return "today";
+    if (days <= 7) return "soon";
+    return "later";
+  }
+
+  // ---- UI state ----------------------------------------------------------
+  let view = "timeline";
+  let modFilter = "all";
+  let statusFilter = "all";
+  let showDone = false;
+
+  const el = sel => document.querySelector(sel);
+  const content = el("#content");
+
+  // ---- summary stats -----------------------------------------------------
+  function renderStats() {
+    const active = items.filter(i => i.status !== "done");
+    const overdue = active.filter(i => i.dueDate && daysUntil(i.dueDate) < 0).length;
+    const today = active.filter(i => i.dueDate && daysUntil(i.dueDate) === 0).length;
+    const week = active.filter(i => i.dueDate && daysUntil(i.dueDate) >= 0 && daysUntil(i.dueDate) <= 7).length;
+    const next = active.filter(i => i.dueDate).sort((a, b) => a.dueDate - b.dueDate)[0];
+    const cards = [
+      { n: overdue, l: "Overdue", cls: overdue ? "alert" : "" },
+      { n: today, l: "Due today", cls: today ? "today" : "" },
+      { n: week, l: "Next 7 days", cls: "" },
+      { n: next ? fmtDate(next.dueDate).replace(/^\w+ /, "") : "—", l: next ? "Next: " + next.title.slice(0, 22) : "All clear", cls: "" },
+    ];
+    el("#stats").innerHTML = cards.map(c =>
+      `<div class="stat ${c.cls}"><div class="n">${c.n}</div><div class="l">${c.l}</div></div>`).join("");
+  }
+
+  // ---- module filter chips ----------------------------------------------
+  function renderModFilter() {
+    const chips = [`<div class="chip ${modFilter === "all" ? "active" : ""}" data-mod="all" style="${modFilter === "all" ? "background:#e7ecf6" : ""}">All</div>`];
+    DATA.modules.forEach(m => {
+      const open = m.items.filter(i => (store[i.id]?.status || i.status) !== "done").length;
+      const on = modFilter === m.id;
+      const style = on ? `background:${m.accent};border-color:${m.accent}` : `color:${m.accent}`;
+      chips.push(`<div class="chip ${on ? "active" : ""}" data-mod="${m.id}" style="${style}">
+        <span class="dot"></span>${m.short}<span class="count">${open}</span></div>`);
+    });
+    el("#modfilter").innerHTML = chips.join("");
+    el("#modfilter").querySelectorAll(".chip").forEach(c =>
+      c.onclick = () => { modFilter = c.dataset.mod; renderModFilter(); render(); });
+  }
+
+  // ---- a single item card ------------------------------------------------
+  function itemCard(it) {
+    const u = urgency(it);
+    const dueCls = ({ overdue: "overdue", today: "today", soon: "soon" })[u] || "";
+    const dueHtml = it.dueDate
+      ? `<div class="due ${dueCls}"><div class="date">${fmtDate(it.dueDate)}${hasTime(it) ? " · " + fmtTime(it.dueDate) : ""}</div>
+           <div class="countdown">${countdown(it)}</div></div>`
+      : `<div class="due"><div class="date">${it.dueText || "TBC"}</div><div class="countdown">no date</div></div>`;
+
+    // subtasks (with per-device overrides)
+    let subHtml = "";
+    let pct = it.progress;
+    if (it.subtasks && it.subtasks.length) {
+      const ov = it.subOverride || {};
+      const states = it.subtasks.map((s, i) => (i in ov) ? ov[i] : !!s.done);
+      const doneN = states.filter(Boolean).length;
+      pct = Math.round((doneN / it.subtasks.length) * 100);
+      subHtml = `<ul class="subtasks" data-id="${it.id}">` + it.subtasks.map((s, i) =>
+        `<li class="${states[i] ? "checked" : ""}" data-i="${i}"><span class="box">${states[i] ? "✓" : ""}</span><span>${esc(s.label)}</span></li>`
+      ).join("") + `</ul>`;
+    }
+    if (it.status === "done") pct = 100;
+    const progHtml = (pct != null)
+      ? `<div class="prog"><div class="track"><div class="fill" style="width:${pct}%"></div></div></div>` : "";
+
+    const meta = [];
+    if (it.location) meta.push("📍 " + esc(it.location));
+    if (it.notes) meta.push(esc(it.notes));
+
+    return `<div class="card ${it.status === "done" ? "done" : ""}" style="--mc:${it.accent}">
+      <div class="main">
+        <div class="title-row">
+          <span class="mod" style="--mc:${it.accent}">${esc(it.modShort)}</span>
+          <span class="title">${esc(it.title)}</span>
+          <span class="type">${esc(it.type)}</span>
+          ${it.weight ? `<span class="weight">· ${it.weight}%</span>` : ""}
+        </div>
+        ${it.group ? `<div class="group">${esc(it.group)}</div>` : ""}
+        ${it.stage ? `<div class="stage">${esc(it.stage)}</div>` : ""}
+        ${progHtml}
+        ${subHtml}
+        ${it.flag ? `<div class="flag">⚠️ ${esc(it.flag)}</div>` : ""}
+        ${meta.length ? `<div class="meta">${meta.map(m => `<span>${m}</span>`).join("")}</div>` : ""}
+      </div>
+      <div class="right">
+        ${dueHtml}
+        <button class="status-btn" data-id="${it.id}" data-s="${it.status}">
+          <span class="dot"></span>${({ todo: "To do", "in-progress": "In progress", done: "Done" })[it.status]}</button>
+      </div>
+    </div>`;
+  }
+
+  function hasTime(it) {
+    return it.due && /T(?!00:00)/.test(it.due) && !/T00:00/.test(it.due);
+  }
+
+  // ---- timeline view -----------------------------------------------------
+  const BUCKETS = [
+    { key: "overdue", label: "⚠️ Overdue", cls: "urgent", test: d => d < 0 },
+    { key: "today", label: "🔥 Due today", cls: "is-today", test: d => d === 0 },
+    { key: "week", label: "This week", cls: "", test: d => d >= 1 && d <= 7 },
+    { key: "fortnight", label: "Next 2 weeks", cls: "", test: d => d >= 8 && d <= 14 },
+    { key: "month", label: "This month", cls: "", test: d => d >= 15 && d <= 31 },
+    { key: "later", label: "Later", cls: "", test: d => d >= 32 },
+  ];
+
+  function renderTimeline() {
+    let pool = items.slice();
+    if (modFilter !== "all") pool = pool.filter(i => i.moduleId === modFilter);
+    if (statusFilter !== "all") pool = pool.filter(i => i.status === statusFilter);
+    if (!showDone) pool = pool.filter(i => i.status !== "done");
+
+    const dated = pool.filter(i => i.dueDate).sort((a, b) => a.dueDate - b.dueDate);
+    const undated = pool.filter(i => !i.dueDate);
+
+    let html = "";
+    BUCKETS.forEach(b => {
+      const inB = dated.filter(i => b.test(daysUntil(i.dueDate)));
+      if (!inB.length) return;
+      html += `<section class="bucket ${b.cls}"><h2>${b.label}<span class="bar"></span><span style="color:var(--faint);font-weight:400">${inB.length}</span></h2>${inB.map(itemCard).join("")}</section>`;
+    });
+    if (undated.length) {
+      html += `<section class="bucket"><h2>📌 No date yet / TBC<span class="bar"></span><span style="color:var(--faint);font-weight:400">${undated.length}</span></h2>${undated.map(itemCard).join("")}</section>`;
+    }
+    if (!html) html = `<div class="empty">Nothing here. ${showDone ? "" : "Tick “Show done” to see completed items."}</div>`;
+    content.innerHTML = html;
+    wireCards();
+  }
+
+  // ---- modules view ------------------------------------------------------
+  function renderModules() {
+    let html = `<div class="modgrid">`;
+    DATA.modules.forEach(m => {
+      const its = m.items.map(it => Object.assign({}, it, { status: store[it.id]?.status || it.status }));
+      const totalW = its.reduce((s, i) => s + (i.weight || 0), 0);
+      const doneW = its.filter(i => i.status === "done").reduce((s, i) => s + (i.weight || 0), 0);
+      const progW = its.filter(i => i.status === "in-progress").reduce((s, i) => s + (i.weight || 0), 0);
+      const nextItem = its.filter(i => i.status !== "done" && i.due).map(i => Object.assign({}, i, { dueDate: new Date(i.due) }))
+        .sort((a, b) => a.dueDate - b.dueDate)[0];
+      const dPct = totalW ? (doneW / totalW) * 100 : 0;
+      const pPct = totalW ? (progW / totalW) * 100 : 0;
+      const weeks = m.weeksTotal ? `Weeks ${m.weeksDone}/${m.weeksTotal}` : "—";
+      const weekPct = m.weeksTotal ? (m.weeksDone / m.weeksTotal) * 100 : 0;
+      html += `<div class="modcard" style="--mc:${m.accent}">
+        <h3>${esc(m.name)}</h3>
+        <div class="code">${esc(m.code)} · ${esc(m.folder)}</div>
+        ${m.weeksTotal ? `<div class="row"><span>Teaching</span><span>${weeks}</span></div>
+          <div class="seg-bar"><i class="done" style="width:${weekPct}%"></i></div>` : ""}
+        <div class="row"><span>Assessment graded-weight</span><span>${doneW}% done${progW ? " · " + progW + "% in progress" : ""}</span></div>
+        <div class="seg-bar"><i class="done" style="width:${dPct}%"></i><i class="prog" style="width:${pPct}%"></i></div>
+        <div class="legend"><span><i style="background:var(--done)"></i>done</span><span><i style="background:var(--prog)"></i>in progress</span><span><i style="background:#0e1626;border:1px solid var(--line)"></i>to do</span></div>
+        ${nextItem ? `<div class="note"><b style="color:var(--text)">Next:</b> ${esc(nextItem.title)} — ${fmtDate(nextItem.dueDate)} (${countdown(Object.assign({}, nextItem, { dueDate: new Date(nextItem.due) }))})</div>` : `<div class="note">No upcoming dated items.</div>`}
+        ${m.weeksNote ? `<div class="note">${esc(m.weeksNote)}</div>` : ""}
+      </div>`;
+    });
+    html += `</div>`;
+    content.innerHTML = html;
+  }
+
+  // ---- wiring ------------------------------------------------------------
+  function wireCards() {
+    content.querySelectorAll(".status-btn").forEach(btn => {
+      btn.onclick = () => {
+        const order = ["todo", "in-progress", "done"];
+        const cur = btn.dataset.s;
+        const next = order[(order.indexOf(cur) + 1) % order.length];
+        store[btn.dataset.id] = Object.assign({}, store[btn.dataset.id], { status: next });
+        save();
+        sync();
+      };
+    });
+    content.querySelectorAll(".subtasks li").forEach(li => {
+      li.onclick = () => {
+        const ul = li.parentElement;
+        const id = ul.dataset.id;
+        const i = +li.dataset.i;
+        const cur = store[id]?.sub || {};
+        const base = (DATA.modules.flatMap(m => m.items).find(x => x.id === id).subtasks[i].done) || false;
+        const now = (i in cur) ? cur[i] : base;
+        cur[i] = !now;
+        store[id] = Object.assign({}, store[id], { sub: cur });
+        save();
+        sync();
+      };
+    });
+  }
+
+  // ---- recompute the in-memory items then re-render ----------------------
+  function sync() {
+    items.forEach(it => {
+      const ov = store[it.id] || {};
+      it.status = ov.status || (DATA.modules.flatMap(m => m.items).find(x => x.id === it.id).status);
+      it.subOverride = ov.sub || null;
+    });
+    render();
+  }
+
+  function render() {
+    renderStats();
+    el("#timeline-controls").style.display = view === "timeline" ? "" : "none";
+    if (view === "timeline") renderTimeline(); else renderModules();
+  }
+
+  // ---- static wiring -----------------------------------------------------
+  el("#sub").textContent = DATA.meta && DATA.meta.note ? "Tap a status pill to cycle To-do → In progress → Done. Tap sub-tasks to tick them off." : "";
+  el("#view").querySelectorAll("button").forEach(b => b.onclick = () => {
+    view = b.dataset.view;
+    el("#view").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
+    render();
+  });
+  el("#statusfilter").querySelectorAll("button").forEach(b => b.onclick = () => {
+    statusFilter = b.dataset.st;
+    el("#statusfilter").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
+    renderTimeline();
+  });
+  el("#showDone").onchange = e => { showDone = e.target.checked; renderTimeline(); };
+  el("#resetBtn").onclick = () => {
+    if (confirm("Clear all status changes and sub-task ticks saved on this device?")) {
+      store = {}; save(); sync();
+    }
+  };
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+  renderModFilter();
+  render();
+})();
+</script>
+</body>
+</html>
