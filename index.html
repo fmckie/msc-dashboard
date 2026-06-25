@@ -9,6 +9,17 @@
 <title>MSc AI — Deadlines & Progress</title>
 <style>
   :root {
+    color-scheme: light dark;
+    --radius: 16px;
+    --on-accent: #0b0f1a;
+    /* status accents (dark defaults; retuned for contrast in light below) */
+    --todo: #64748b;
+    --prog: #38bdf8;
+    --done: #34d399;
+    --overdue: #fb7185;
+    --today: #fbbf24;
+    --soon: #f59e0b;
+    /* surfaces — dark is the default palette */
     --bg: #0b0f1a;
     --panel: #131a2a;
     --panel-2: #18213450;
@@ -16,19 +27,68 @@
     --text: #e7ecf6;
     --muted: #93a0bd;
     --faint: #66728f;
-    --todo: #64748b;
-    --prog: #38bdf8;
-    --done: #34d399;
-    --overdue: #fb7185;
-    --today: #fbbf24;
-    --soon: #f59e0b;
-    --radius: 16px;
     --shadow: 0 8px 30px rgba(0,0,0,.35);
+    --bg-grad: radial-gradient(1200px 600px at 80% -10%, #16213b 0%, var(--bg) 55%);
+    --track: #0e1626;
+    --seg-active: #243049;
+    --flag-bg: #3a2f12;
+    --flag-line: #5b491c;
+    --flag-text: #fcd34d;
+  }
+  [data-theme="dark"] { color-scheme: dark; }
+  /* Light palette: used when explicitly chosen (below) or as the pre-JS
+     default for visitors whose OS prefers light and who made no choice. */
+  [data-theme="light"] {
+    color-scheme: light;
+    --todo: #64748b;
+    --prog: #0284c7;
+    --done: #0f9d6b;
+    --overdue: #e11d48;
+    --today: #b45c08;
+    --soon: #ea580c;
+    --bg: #f3f5fb;
+    --panel: #ffffff;
+    --panel-2: #eef1f8;
+    --line: #d9dfec;
+    --text: #18202f;
+    --muted: #55617a;
+    --faint: #8b96ad;
+    --shadow: 0 8px 30px rgba(23,37,77,.10);
+    --bg-grad: radial-gradient(1200px 600px at 80% -10%, #e7edfb 0%, var(--bg) 55%);
+    --track: #e7ebf4;
+    --seg-active: #dde4f3;
+    --flag-bg: #fdf3da;
+    --flag-line: #efd699;
+    --flag-text: #8a5a06;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme]) {
+      color-scheme: light;
+      --prog: #0284c7;
+      --done: #0f9d6b;
+      --overdue: #e11d48;
+      --today: #b45c08;
+      --soon: #ea580c;
+      --bg: #f3f5fb;
+      --panel: #ffffff;
+      --panel-2: #eef1f8;
+      --line: #d9dfec;
+      --text: #18202f;
+      --muted: #55617a;
+      --faint: #8b96ad;
+      --shadow: 0 8px 30px rgba(23,37,77,.10);
+      --bg-grad: radial-gradient(1200px 600px at 80% -10%, #e7edfb 0%, var(--bg) 55%);
+      --track: #e7ebf4;
+      --seg-active: #dde4f3;
+      --flag-bg: #fdf3da;
+      --flag-line: #efd699;
+      --flag-text: #8a5a06;
+    }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    background: radial-gradient(1200px 600px at 80% -10%, #16213b 0%, var(--bg) 55%) fixed;
+    background: var(--bg-grad) fixed;
     color: var(--text);
     font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -58,7 +118,7 @@
     display: inline-flex; align-items: center; gap: 7px; transition: .12s;
   }
   .chip:hover { border-color: #34507e; color: var(--text); }
-  .chip.active { color: #0b0f1a; font-weight: 650; }
+  .chip.active { color: var(--on-accent); font-weight: 650; }
   .chip .dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
   .chip .count { font-size: 11px; opacity: .8; }
   .controls .spacer { flex: 1; }
@@ -68,7 +128,32 @@
   /* segment switch */
   .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
   .seg button { border: 0; background: transparent; color: var(--muted); font-size: 13px; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
-  .seg button.active { background: #243049; color: var(--text); }
+  .seg button.active { background: var(--seg-active); color: var(--text); }
+  .theme-seg { margin-left: auto; align-self: center; padding: 2px; }
+  .theme-seg button { font-size: 13px; padding: 5px 9px; line-height: 1; filter: grayscale(.2); }
+  .theme-seg button.active { filter: none; }
+
+  /* focus hero (Feature 7) */
+  .hero {
+    display: flex; align-items: center; gap: 18px;
+    background: linear-gradient(120deg, color-mix(in srgb, var(--mc) 17%, var(--panel)), var(--panel) 62%);
+    border: 1px solid color-mix(in srgb, var(--mc) 38%, var(--line));
+    border-left: 4px solid var(--mc);
+    border-radius: 16px; padding: 16px 18px; margin-bottom: 18px; box-shadow: var(--shadow);
+  }
+  .hero-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .hero-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--mc); font-weight: 700; }
+  .hero-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .hero-title { font-size: 18px; font-weight: 700; line-height: 1.25; }
+  .hero-metaline { font-size: 12.5px; color: var(--muted); }
+  .hero-due { font-size: 13px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .hero-due.overdue { color: var(--overdue); font-weight: 650; }
+  .hero-due.today { color: var(--today); font-weight: 650; }
+  .hero-due.soon { color: var(--soon); font-weight: 600; }
+  .hero .status-btn { margin-top: 3px; }
+  .hero-ring { flex: none; }
+  .hero.allclear { justify-content: center; text-align: center; color: var(--muted); font-size: 14px; padding: 22px;
+    background: var(--panel); border: 1px solid var(--line); }
 
   /* timeline bucket */
   .bucket { margin: 22px 0 6px; }
@@ -79,10 +164,13 @@
 
   /* cards */
   .card {
+    position: relative;
     background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--mc, #64748b);
     border-radius: 14px; padding: 13px 15px; margin-bottom: 10px; box-shadow: var(--shadow);
     display: grid; grid-template-columns: 1fr auto; gap: 6px 14px; align-items: start;
   }
+  .done-check { position: absolute; right: 12px; top: 12px; width: 28px; height: 28px; pointer-events: none; }
+  .done-check path { fill: none; stroke: var(--done); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; }
   .card.done { opacity: .55; }
   .card .main { min-width: 0; }
   .card .title-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
@@ -97,8 +185,12 @@
   .card .group { font-size: 11.5px; color: var(--faint); }
   .card .weight { font-size: 12px; color: var(--muted); }
   .card .stage { color: var(--muted); font-size: 13px; margin-top: 5px; }
-  .card .flag { margin-top: 7px; font-size: 12.5px; color: #fcd34d; background: #3a2f12; border: 1px solid #5b491c; padding: 6px 9px; border-radius: 8px; }
+  .card .flag { margin-top: 7px; font-size: 12.5px; color: var(--flag-text); background: var(--flag-bg); border: 1px solid var(--flag-line); padding: 6px 9px; border-radius: 8px; }
   .card .meta { color: var(--faint); font-size: 12px; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .card-actions { margin-top: 9px; }
+  .ics-btn { border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); font-size: 11.5px;
+    padding: 4px 10px; border-radius: 999px; cursor: pointer; transition: .12s; }
+  .ics-btn:hover { border-color: #34507e; color: var(--text); }
 
   .right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
   .due { font-variant-numeric: tabular-nums; }
@@ -122,13 +214,38 @@
 
   /* progress + subtasks */
   .prog { margin-top: 9px; }
-  .prog .track { height: 6px; background: #0e1626; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .prog .track { height: 6px; background: var(--track); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
   .prog .fill { height: 100%; background: linear-gradient(90deg, var(--mc), color-mix(in srgb, var(--mc) 55%, #fff)); border-radius: 999px; }
   .subtasks { margin: 9px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
   .subtasks li { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--muted); cursor: pointer; }
-  .subtasks li .box { width: 15px; height: 15px; border-radius: 4px; border: 1px solid var(--line); flex: none; margin-top: 1px; display: grid; place-items: center; font-size: 10px; color: var(--bg); }
+  .subtasks li .box { width: 15px; height: 15px; border-radius: 4px; border: 1px solid var(--line); flex: none; margin-top: 1px; display: grid; place-items: center; font-size: 10px; color: var(--on-accent); }
   .subtasks li.checked .box { background: var(--done); border-color: var(--done); }
   .subtasks li.checked { color: var(--faint); text-decoration: line-through; }
+
+  /* calendar / month view (Feature 1) */
+  .cal-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .cal-title { font-size: 16px; font-weight: 650; min-width: 132px; text-align: center; }
+  .cal-btn { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 10px;
+    min-width: 36px; height: 34px; padding: 0 12px; font-size: 15px; cursor: pointer; line-height: 1; transition: .12s; }
+  .cal-btn:hover { border-color: #34507e; }
+  .cal-today { font-size: 13px; font-weight: 600; }
+  .cal-nav .spacer { flex: 1; }
+  .cal-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(78px, 1fr)); gap: 6px; min-width: 560px; }
+  .cal-dow { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); text-align: center; padding: 2px 0 4px; }
+  .cal-cell { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-height: 84px; padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+  .cal-cell.empty { background: transparent; border-color: transparent; }
+  .cal-cell.today { border-color: var(--today); box-shadow: inset 0 0 0 1px var(--today); }
+  .cal-cell.today .cal-date { color: var(--today); font-weight: 700; }
+  .cal-cell.overdue { background: color-mix(in srgb, var(--overdue) 9%, var(--panel)); border-color: color-mix(in srgb, var(--overdue) 35%, var(--line)); }
+  .cal-date { font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .cal-pills { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .cal-pill { text-align: left; border: 0; cursor: pointer; font-size: 10.5px; line-height: 1.25; padding: 2px 6px; border-radius: 6px;
+    color: var(--mc); background: color-mix(in srgb, var(--mc) 16%, transparent); border: 1px solid color-mix(in srgb, var(--mc) 42%, transparent);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; transition: .12s; }
+  .cal-pill:hover { background: color-mix(in srgb, var(--mc) 28%, transparent); }
+  .cal-pill.done { opacity: .5; text-decoration: line-through; }
+  .card.pulse { animation: cardPulse 1.6s ease; }
 
   /* module progress section */
   .modgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
@@ -137,7 +254,7 @@
   .modcard .code { color: var(--faint); font-size: 12px; }
   .modcard .row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin: 11px 0 5px; }
   .modcard .note { color: var(--faint); font-size: 12px; margin-top: 11px; line-height: 1.45; }
-  .seg-bar { height: 8px; border-radius: 999px; background: #0e1626; border: 1px solid var(--line); overflow: hidden; display: flex; }
+  .seg-bar { height: 8px; border-radius: 999px; background: var(--track); border: 1px solid var(--line); overflow: hidden; display: flex; }
   .seg-bar i { height: 100%; display: block; }
   .seg-bar i.done { background: var(--done); }
   .seg-bar i.prog { background: var(--prog); }
@@ -145,9 +262,69 @@
   .legend span { display: inline-flex; align-items: center; gap: 5px; }
   .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 
+  /* countdown rings (Feature 3) */
+  .ring { flex: none; overflow: visible; }
+  .ring .ring-track { stroke: var(--track); }
+  .ring .ring-arc { stroke: var(--mc); }
+  .ring .ring-label { fill: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ring .ring-sub { fill: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .modcard-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .modcard-head .htext { min-width: 0; }
+  .modcard-head h3 { margin: 0 0 2px; }
+
+  /* inline search + command palette (Feature 6) */
+  .search-input {
+    flex: 1; min-width: 130px; max-width: 280px; background: var(--panel); color: var(--text);
+    border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font-size: 13px; transition: .12s;
+  }
+  .search-input::placeholder { color: var(--faint); }
+  .search-input:focus { outline: none; border-color: #34507e; }
+  .palette { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-start; justify-content: center;
+    padding: 12vh 16px 16px; background: rgba(4,8,18,.55); backdrop-filter: blur(3px); }
+  .palette[hidden] { display: none; }
+  .palette-box { width: 100%; max-width: 560px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; max-height: 70vh; }
+  .palette-input { border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--text);
+    font-size: 16px; padding: 15px 18px; }
+  .palette-input:focus { outline: none; }
+  .palette-list { overflow-y: auto; padding: 6px; -webkit-overflow-scrolling: touch; }
+  .palette-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; cursor: pointer; }
+  .palette-row .pr-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mc, var(--faint)); flex: none; }
+  .palette-row .pr-label { flex: 1; min-width: 0; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .palette-row .pr-sub { font-size: 11.5px; color: var(--faint); white-space: nowrap; }
+  .palette-row.active { background: var(--seg-active); }
+  .palette-empty { padding: 18px; text-align: center; color: var(--faint); font-size: 13px; }
+  .palette-foot { display: flex; gap: 16px; padding: 9px 16px; border-top: 1px solid var(--line); color: var(--faint); font-size: 11px; }
+
+  /* completion celebration (Feature 4) */
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 60; }
+  .toast-host { position: fixed; left: 0; right: 0; bottom: 22px; display: flex; flex-direction: column; align-items: center;
+    gap: 8px; pointer-events: none; z-index: 61; padding: 0 16px; }
+  .toast-item { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-left: 3px solid var(--done);
+    border-radius: 12px; padding: 11px 16px; font-size: 13.5px; font-weight: 600; box-shadow: var(--shadow); max-width: 90vw;
+    opacity: 0; transform: translateY(12px); transition: opacity .3s ease, transform .3s ease; }
+  .toast-item.in { opacity: 1; transform: none; }
+
   .empty { color: var(--faint); font-size: 13px; padding: 20px; text-align: center; border: 1px dashed var(--line); border-radius: 14px; }
   footer { color: var(--faint); font-size: 12px; text-align: center; margin-top: 34px; line-height: 1.7; }
   footer button { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: 12px; }
+
+  /* ---- motion layer (Feature 2): all gated behind no-preference ------- */
+  @media (prefers-reduced-motion: no-preference) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) { animation-duration: .26s; }
+    .motion .card.reveal { animation: revealIn .3s cubic-bezier(.22,.61,.36,1) both; animation-delay: var(--rev-delay, 0ms); }
+    @keyframes revealIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .ring .ring-arc { transition: stroke-dashoffset .7s cubic-bezier(.22,.61,.36,1); }
+    @keyframes cardPulse { 0%, 100% { box-shadow: var(--shadow); } 18% { box-shadow: 0 0 0 2px var(--mc), var(--shadow); } }
+    .just-done { animation: cardPop .5s ease; }
+    @keyframes cardPop { 0% { transform: scale(1); } 35% { transform: scale(1.015); } 100% { transform: scale(1); } }
+    .just-done .done-check path { animation: drawCheck .5s ease forwards; }
+    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+    .just-done .title { position: relative; }
+    .just-done .title::after { content: ""; position: absolute; left: 0; top: 52%; height: 2px; width: 0; background: var(--done); animation: strikeThrough .5s ease forwards; }
+    @keyframes strikeThrough { to { width: 100%; } }
+  }
 
   @media (max-width: 620px) {
     .wrap { padding: 16px 12px 70px; }
@@ -155,6 +332,8 @@
     .card { grid-template-columns: 1fr; }
     .right { flex-direction: row; align-items: center; justify-content: space-between; text-align: left; width: 100%; }
     .due { text-align: left; }
+    .hero { gap: 12px; padding: 14px; }
+    .hero-ring svg { width: 76px; height: 76px; }
   }
 </style>
 </head>
@@ -162,7 +341,12 @@
 <div class="wrap">
   <header class="top">
     <h1>🎓 MSc AI — Deadlines &amp; Progress</h1>
-    <span class="updated">built 2026-06-25 19:49</span>
+    <span class="updated">built 2026-06-25 20:48</span>
+    <div class="seg theme-seg" id="themeseg" role="group" aria-label="Colour theme">
+      <button data-theme-choice="system" title="Match system" aria-label="Match system theme">🖥️</button>
+      <button data-theme-choice="light" title="Light" aria-label="Light theme">☀️</button>
+      <button data-theme-choice="dark" title="Dark" aria-label="Dark theme">🌙</button>
+    </div>
   </header>
   <p class="sub" id="sub"></p>
 
@@ -170,6 +354,7 @@
 
   <div class="seg" id="view" style="margin-bottom:14px">
     <button data-view="timeline" class="active">📅 Timeline</button>
+    <button data-view="calendar">🗓 Calendar</button>
     <button data-view="modules">📚 By module</button>
   </div>
 
@@ -181,6 +366,7 @@
         <button data-st="todo">To do</button>
         <button data-st="in-progress">In progress</button>
       </div>
+      <input id="search" class="search-input" type="search" placeholder="Search…  ( / )" autocomplete="off" aria-label="Search items" />
       <span class="spacer"></span>
       <label class="toggle"><input type="checkbox" id="showDone" /> Show done</label>
     </div>
@@ -190,8 +376,20 @@
 
   <footer>
     <div>Status changes &amp; checkboxes save to this device only (localStorage). Dates come from <code>data.json</code>.</div>
+    <div><button id="exportAllBtn">📅 Export all deadlines (.ics)</button></div>
     <div><button id="resetBtn">Reset my saved progress</button></div>
   </footer>
+</div>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="toast-host" id="toast" aria-live="polite"></div>
+
+<div class="palette" id="palette" hidden>
+  <div class="palette-box" role="dialog" aria-modal="true" aria-label="Command palette">
+    <input id="paletteInput" class="palette-input" type="text" placeholder="Search items or run a command…" autocomplete="off" spellcheck="false" />
+    <div class="palette-list" id="paletteList"></div>
+    <div class="palette-foot"><span>↑↓ navigate</span><span>↵ open</span><span>esc close</span></div>
+  </div>
 </div>
 
 <script type="application/json" id="data">{"meta":{"title":"MSc AI — Deadlines & Progress","owner":"QMUL MSc AI","updated":"2026-06-25","note":"Source of truth for the dashboard. Edit this file, then run `python3 build.py` to regenerate index.html. Times are UK local. Items with `due: null` have no confirmed date yet (see `flag`)."},"modules":[{"id":"nndl","code":"ECS7037P","name":"Neural Nets & DL","short":"NN&DL","folder":"5 - Neural Nets & DL","accent":"#7c6cff","weeksDone":4,"weeksTotal":9,"weeksNote":"Weeks 1–4 complete; Week 5 (Pretrained Models & Transfer Learning) in progress. Theory runs to week 9 (Quiz 2 covers weeks 5–9).","items":[{"id":"nndl-group","title":"Form group of 2 for project","type":"milestone","weight":0,"due":null,"dueText":"Done","status":"done","stage":"Partnered with Katie (Group 10).","location":"","notes":"Project is done in pairs."},{"id":"nndl-quiz1","title":"Quiz 1","type":"quiz","weight":10,"due":"2026-06-25T13:00:00","dueText":"25 Jun, 13:00","status":"todo","stage":"Revision cheat-sheet ready (weeks 1–4, checked static HTML).","progress":80,"location":"Online","notes":"Weeks 1–4 theory."},{"id":"nndl-proposal","title":"Group project proposal (optional)","type":"proposal","weight":0,"due":"2026-06-26T17:00:00","dueText":"26 Jun, 17:00","status":"done","stage":"Submitted. Topic: CNN robustness for real-vs-AI image detection.","location":"","notes":"Stored at 5 - Neural Nets & DL/Assignment/group project/Group 10 Project Proposal.pdf"},{"id":"nndl-labs25","title":"Labs 2–5","type":"lab","weight":10,"due":"2026-07-03T17:00:00","dueText":"3 Jul, 17:00","status":"todo","stage":"Not started.","location":"QM+","notes":"Bundle of lab submissions."},{"id":"nndl-quiz2","title":"Quiz 2","type":"quiz","weight":10,"due":"2026-07-30T13:00:00","dueText":"30 Jul, 13:00","status":"todo","stage":"Not started — covers weeks 5–9.","location":"Online","notes":"Weeks 5–9 theory."},{"id":"nndl-labs69","title":"Labs 6–9","type":"lab","weight":10,"due":"2026-08-07T17:00:00","dueText":"7 Aug, 17:00","status":"todo","stage":"Not started.","location":"QM+","notes":"Bundle of lab submissions."},{"id":"nndl-project","title":"Group Project","type":"project","weight":60,"due":"2026-08-14T17:00:00","dueText":"14 Aug, 17:00","status":"todo","stage":"Proposal submitted (with Katie). Implementation not started — baseline vs augmentation-robust CNN on CIFAKE (PyTorch), tested across blur/noise degradation tiers.","location":"QM+","notes":"Largest single component of the module."}]},{"id":"risk","code":"ECS7005P","name":"Risk & Decision-Making","short":"Risk","folder":"6 - Risk & Decision","accent":"#f5a524","weeksDone":5,"weeksTotal":8,"weeksNote":"Weeks 1–5 complete. Course arc runs through week 8.","items":[{"id":"risk-test","title":"In-Person Test","type":"exam","weight":30,"due":"2026-07-13T15:00:00","dueText":"Mon 13 Jul, 15:00–17:00","status":"todo","stage":"Week 5 revision lab (consolidates weeks 1–3) done with official answers.","progress":30,"location":"In person — bring ID","notes":"Pen-and-paper. Notes allowed (no books). No electronic devices."},{"id":"risk-coursework","title":"Coursework Assignment","type":"coursework","weight":70,"due":null,"dueText":"Not released yet","status":"todo","stage":"Brief + deadline not released yet (confirmed 25 Jun). Watch QM+.","flag":"No release date yet — brief still to be published. Add the date here once it lands.","location":"QM+","notes":"Largest single component of the module (70%)."}]},{"id":"apps","code":"ECS7036P","name":"Applications of AI","short":"Apps","folder":"7 - Applications of AI","accent":"#22c55e","weeksDone":5,"weeksTotal":5,"weeksNote":"Weeks 1–5 complete.","items":[{"id":"apps-lab1","title":"Lab 1 submission (optional)","type":"lab","weight":0,"due":null,"dueText":"Optional · XP only","status":"in-progress","stage":"Optional — XP only, not compulsory. Answers drafted + code verified; package if you want the XP.","progress":60,"location":"QM+","notes":"Level-Up XP item — not graded, not required.","subtasks":[{"label":"Answers drafted (week 2/lab-1) + code verified","done":true},{"label":"Paste into docx template, fill name/ID","done":false},{"label":"Settle GenAI declaration","done":false},{"label":"Upload to QM+","done":false}]},{"id":"apps-group-form","title":"Form group of 3–4 for Group Project","type":"milestone","weight":0,"due":null,"dueText":"Done","status":"done","stage":"Group 10 locked in: you, Kaylab & Eric.","location":""},{"id":"apps-gp-proposal","title":"Group Project — Proposal","group":"Group Project (40%)","type":"proposal","weight":5,"due":"2026-06-26T23:59:00","dueText":"26 Jun, 23:59 GMT","status":"in-progress","stage":"Ported into required LaTeX template; Evaluation section written; refs fixed. Final fill + compile remaining.","progress":80,"location":"QM+ (PDF)","notes":"LaTeX template required. 1–3 pages / 800–1200 words, ≥3 published refs. GenAI permitted (module leader overrides brief).","subtasks":[{"label":"Draft written + stored","done":true},{"label":"Ported into required LaTeX template","done":true},{"label":"Evaluation section + 5 cites; bibliography (13 refs)","done":true},{"label":"Fill Author 2/3 names + 3 emails + final title","done":false},{"label":"Replace 'Name 2/3' in Contributions; proofread","done":false},{"label":"Compile to PDF (Overleaf/Colab)","done":false},{"label":"One member uploads PDF to QM+ before deadline","done":false}]},{"id":"apps-gp-report","title":"Group Project — Report + Implementation","group":"Group Project (40%)","type":"coursework","weight":20,"due":"2026-07-21T23:59:00","dueText":"21 Jul","status":"todo","stage":"Report LaTeX template macro fixed so it compiles. Content not started.","progress":5,"location":"QM+","notes":"Report (10%) + implementation (10%). 6–8 pages, abstract ≤250 words, cite every borrowed sentence/figure."},{"id":"apps-gp-viva","title":"Group Project — Presentation + Viva","group":"Group Project (40%)","type":"presentation","weight":15,"due":"2026-07-24T23:59:00","dueText":"24 Jul","status":"todo","stage":"Not started.","location":"","notes":"Scored individually."},{"id":"apps-mini-proposal","title":"Mini Project — Proposal","group":"Mini Project (60%)","type":"proposal","weight":5,"due":"2026-07-28T23:59:00","dueText":"28 Jul","status":"todo","stage":"Not started. Individual-project brief + templates not yet pulled from QM+.","flag":"Grab the individual-project brief + templates off QM+.","location":"QM+"},{"id":"apps-mini-report","title":"Mini Project — Report + Implementation","group":"Mini Project (60%)","type":"coursework","weight":35,"due":"2026-08-10T23:59:00","dueText":"10 Aug","status":"todo","stage":"Not started.","location":"QM+","notes":"Report (15%) + implementation (20%)."},{"id":"apps-mini-viva","title":"Mini Project — Presentation + Viva","group":"Mini Project (60%)","type":"presentation","weight":20,"due":"2026-08-14T23:59:00","dueText":"14 Aug","status":"todo","stage":"Not started.","location":"","notes":"Includes demo video."}]},{"id":"final","code":"Dissertation","name":"Final Project","short":"Final","folder":"Final Project","accent":"#38bdf8","weeksDone":0,"weeksTotal":0,"weeksNote":"Direction: council of LLM forecasters + meta-predictor of failure → abstain (fintech reliability). Status: planning. Supervisor: David Mguni (confirmed 25 Jun).","items":[{"id":"final-supervisor","title":"Supervisor selection window closes","type":"admin","weight":0,"due":"2026-06-30T23:59:00","dueText":"30 Jun","status":"done","stage":"David Mguni confirmed & filed the paperwork (25 Jun); he also steered the contribution to council + meta-predictor of failure. Selection window formally closes 30 Jun; allocation completes 10 Jul.","location":"QM+","notes":"Selection/adoption window opened 27 May, closes 30 Jun; supervisor allocation complete 10 Jul."},{"id":"final-definition","title":"Project Definition document","type":"milestone","weight":0,"due":"2026-07-24T23:59:00","dueText":"24 Jul","status":"todo","stage":"Not started. 3–4 pages + work-plan/Gantt.","location":"QMPlus","notes":"Not assessed but must be approved by supervisor."},{"id":"final-ethics","title":"Ethical approval application","type":"admin","weight":0,"due":null,"dueText":"If applicable — see 24 Sept session","status":"todo","stage":"Only required if research involves human participants. Ethics covered in the 24 Sept session; discuss with supervisor first.","flag":"No fixed date — apply via DSREC before any human-participant research. Likely N/A for an LLM/data project.","location":"EECS DSREC online form"},{"id":"final-draft","title":"Draft dissertation research paper","type":"milestone","weight":0,"due":"2026-11-06T23:59:00","dueText":"6 Nov","status":"todo","stage":"Not started.","location":"QMPlus","notes":"Not assessed — supervisor provides feedback."},{"id":"final-dissertation","title":"Final dissertation + reflective essay + supporting docs","type":"project","weight":100,"due":"2026-12-15T23:59:00","dueText":"15 Dec","status":"todo","stage":"Not started.","location":"QMPlus","notes":"Research-paper format + 5-page reflective essay. Assessed by supervisor + second examiner. 100% of the project."},{"id":"final-video","title":"Presentation Video","type":"presentation","weight":0,"due":"2026-12-16T23:59:00","dueText":"16 Dec","status":"todo","stage":"Not started.","location":"QMPlus","notes":"10-minute video (±10%). Part of the viva assessment."},{"id":"final-viva","title":"Viva Q&A session","type":"exam","weight":0,"due":"2027-01-07T00:00:00","dueText":"7–18 Jan 2027","status":"todo","stage":"Viva period 7–18 Jan 2027. Allocated 20-min slot, online.","location":"Online","notes":"Failure to attend = zero for the project."},{"id":"final-sess-defmethods","title":"Session: Project Definition & Research Methods","type":"session","weight":0,"due":"2026-07-09T10:00:00","dueText":"9 Jul, 10:00","status":"todo","stage":"Taught session — prep for the 24 Jul Project Definition deliverable.","location":"Laws 210, 10:00–11:30"},{"id":"final-sess-litreview","title":"Session: Literature Review & Plagiarism","type":"session","weight":0,"due":"2026-07-30T10:00:00","dueText":"30 Jul, 10:00","status":"todo","stage":"Taught session.","location":"Laws 210, 10:00–11:30"},{"id":"final-sess-deliverables","title":"Session: Project Deliverables & Ethics","type":"session","weight":0,"due":"2026-09-24T10:00:00","dueText":"24 Sep, 10:00","status":"todo","stage":"Taught session — covers ethics process.","location":"Room TBC, 10:00–11:30"}]}]}</script>
@@ -200,7 +398,31 @@
   "use strict";
   const DATA = JSON.parse(document.getElementById("data").textContent);
   const STORE_KEY = "mscai-dashboard-v1";
+  const THEME_KEY = "mscai-theme";
   const now = new Date();
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- theme (separate key so "reset progress" never wipes it) -----------
+  const sysDark = matchMedia("(prefers-color-scheme: dark)");
+  let themeChoice = "system";
+  try { themeChoice = localStorage.getItem(THEME_KEY) || "system"; } catch (e) {}
+  if (themeChoice !== "light" && themeChoice !== "dark") themeChoice = "system";
+  function applyTheme(t) {
+    themeChoice = t;
+    const root = document.documentElement;
+    if (t === "system") { delete root.dataset.theme; }
+    else { root.dataset.theme = t; }
+    const dark = t === "dark" || (t === "system" && sysDark.matches);
+    const meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.content = dark ? "#0b0f1a" : "#f3f5fb";
+    document.querySelectorAll("#themeseg button").forEach(b =>
+      b.classList.toggle("active", b.dataset.themeChoice === t));
+  }
+  function setTheme(t) {
+    try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+    applyTheme(t);
+  }
+  sysDark.addEventListener("change", () => { if (themeChoice === "system") applyTheme("system"); });
 
   // ---- persistence (per device) -----------------------------------------
   let store = {};
@@ -223,6 +445,12 @@
         dueDate: it.due ? new Date(it.due) : null,
       }));
     });
+  });
+
+  // precomputed lowercase haystack for search / palette matching
+  items.forEach(it => {
+    it._search = [it.title, it.modShort, modById[it.moduleId].name, it.type, it.group, it.stage, it.notes, it.location]
+      .filter(Boolean).join(" ").toLowerCase();
   });
 
   // ---- date helpers ------------------------------------------------------
@@ -257,14 +485,95 @@
     return "later";
   }
 
+  // ---- focus-hero scoring (Feature 7): weight × urgency ------------------
+  function urgencyMultiplier(it) {
+    if (!it.dueDate) return 0.2;         // undated — low baseline
+    const d = daysUntil(it.dueDate);
+    if (d < 0) return 3.0;               // overdue dominates
+    if (d === 0) return 2.6;             // due today
+    if (d <= 3) return 2.0;
+    if (d <= 7) return 1.5;
+    if (d <= 14) return 1.0;
+    if (d <= 31) return 0.6;
+    if (d <= 60) return 0.3;
+    if (d <= 120) return 0.15;
+    return 0.08;                         // months away — not “right now”
+  }
+  function scoreItem(it) {
+    return ((it.weight || 0) + 3) * urgencyMultiplier(it);
+  }
+  // Time-elapsed toward the deadline, approximated over a 30-day horizon so the
+  // ring fills as the date nears (0% far away → 100% due/overdue).
+  function elapsedPct(it) {
+    if (!it.dueDate) return 0;
+    const H = 30;
+    return Math.max(0, Math.min(100, Math.round(100 * (H - daysUntil(it.dueDate)) / H)));
+  }
+
   // ---- UI state ----------------------------------------------------------
   let view = "timeline";
   let modFilter = "all";
   let statusFilter = "all";
   let showDone = false;
+  let query = "";
+  let instant = false;                  // skip reveal/ring animation this paint
+  let justCompleted = null;             // item id to flash a checkmark on
+  let viewMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const el = sel => document.querySelector(sel);
   const content = el("#content");
+  if (!reduceMotion) document.body.classList.add("motion");
+
+  // ---- motion layer (Feature 2) ------------------------------------------
+  // paint(): cross-fade structural changes via the View Transitions API when
+  // available; otherwise update instantly (older browsers fall back to the
+  // scroll-reveal flourish below). Always a no-op under reduced motion.
+  let suppressReveal = false;
+  function paint(update) {
+    if (reduceMotion || !document.startViewTransition) { update(); return; }
+    suppressReveal = true;
+    const t = document.startViewTransition(update);
+    t.finished.finally(() => { suppressReveal = false; });
+  }
+
+  // Scroll-reveal: stagger cards in as they enter the viewport. Skipped during
+  // a view transition (the cross-fade already carries the motion).
+  let revealObs = null;
+  function setupReveal() {
+    if (reduceMotion || suppressReveal || instant || !("IntersectionObserver" in window)) return;
+    if (revealObs) revealObs.disconnect();
+    revealObs = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("reveal");
+        obs.unobserve(e.target);
+      });
+    }, { rootMargin: "0px 0px -6% 0px", threshold: 0.04 });
+    content.querySelectorAll(".card").forEach((c, i) => {
+      c.style.setProperty("--rev-delay", Math.min(i, 8) * 35 + "ms");
+      revealObs.observe(c);
+    });
+  }
+
+  // Count-up tween for the stat strip; non-numeric values are set directly.
+  const lastStat = {};
+  function countUp(node, to, key) {
+    const numeric = /^\d+$/.test(String(to));
+    if (!numeric || reduceMotion) { node.textContent = to; lastStat[key] = to; return; }
+    const target = +to;
+    const from = (/^\d+$/.test(String(lastStat[key]))) ? +lastStat[key] : 0;
+    lastStat[key] = to;
+    if (from === target) { node.textContent = to; return; }
+    node.textContent = from;
+    const dur = 500, t0 = performance.now();
+    function step(t) {
+      const p = Math.min(1, (t - t0) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      node.textContent = Math.round(from + (target - from) * eased);
+      if (p < 1) requestAnimationFrame(step); else node.textContent = to;
+    }
+    requestAnimationFrame(step);
+  }
 
   // ---- summary stats -----------------------------------------------------
   function renderStats() {
@@ -279,13 +588,15 @@
       { n: week, l: "Next 7 days", cls: "" },
       { n: next ? fmtDate(next.dueDate).replace(/^\w+ /, "") : "—", l: next ? "Next: " + next.title.slice(0, 22) : "All clear", cls: "" },
     ];
-    el("#stats").innerHTML = cards.map(c =>
+    const host = el("#stats");
+    host.innerHTML = cards.map(c =>
       `<div class="stat ${c.cls}"><div class="n">${c.n}</div><div class="l">${c.l}</div></div>`).join("");
+    host.querySelectorAll(".stat .n").forEach((node, i) => countUp(node, cards[i].n, "k" + i));
   }
 
   // ---- module filter chips ----------------------------------------------
   function renderModFilter() {
-    const chips = [`<div class="chip ${modFilter === "all" ? "active" : ""}" data-mod="all" style="${modFilter === "all" ? "background:#e7ecf6" : ""}">All</div>`];
+    const chips = [`<div class="chip ${modFilter === "all" ? "active" : ""}" data-mod="all" style="${modFilter === "all" ? "background:var(--text);color:var(--bg)" : ""}">All</div>`];
     DATA.modules.forEach(m => {
       const open = m.items.filter(i => (store[i.id]?.status || i.status) !== "done").length;
       const on = modFilter === m.id;
@@ -295,7 +606,46 @@
     });
     el("#modfilter").innerHTML = chips.join("");
     el("#modfilter").querySelectorAll(".chip").forEach(c =>
-      c.onclick = () => { modFilter = c.dataset.mod; renderModFilter(); render(); });
+      c.onclick = () => { modFilter = c.dataset.mod; renderModFilter(); repaint(); });
+  }
+
+  // ---- countdown ring (Feature 3) ----------------------------------------
+  // Returns inline SVG: a faint track + an accent arc. The arc renders empty
+  // (offset = full circumference) and animateRings() fills it on the next
+  // frame so the CSS stroke-dashoffset transition plays on load/change.
+  function ring(pct, color, size, label, sub) {
+    size = size || 72;
+    const stroke = Math.max(4, Math.round(size / 11));
+    const r = (size - stroke) / 2;
+    const c = (2 * Math.PI * r);
+    const p = Math.max(0, Math.min(100, pct || 0));
+    const offset = c - (p / 100) * c;
+    const mid = size / 2;
+    const lblSize = Math.round(size * 0.27);
+    const subSize = Math.round(size * 0.15);
+    return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${p}% complete" style="--mc:${color}">
+      <g transform="rotate(-90 ${mid} ${mid})">
+        <circle class="ring-track" cx="${mid}" cy="${mid}" r="${r}" stroke-width="${stroke}" fill="none"></circle>
+        <circle class="ring-arc" cx="${mid}" cy="${mid}" r="${r}" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${c.toFixed(2)}" data-off="${offset.toFixed(2)}"></circle>
+      </g>
+      ${label != null ? `<text class="ring-label" x="${mid}" y="${mid}" dy="${sub ? "-0.05em" : "0.34em"}" text-anchor="middle" font-size="${lblSize}">${label}</text>` : ""}
+      ${sub ? `<text class="ring-sub" x="${mid}" y="${mid}" dy="1.25em" text-anchor="middle" font-size="${subSize}">${sub}</text>` : ""}
+    </svg>`;
+  }
+  function animateRings(root) {
+    const noAnim = reduceMotion || instant;
+    (root || content).querySelectorAll(".ring-arc").forEach(arc => {
+      const off = arc.dataset.off;
+      if (off == null) return;
+      if (noAnim) { arc.style.strokeDashoffset = off; return; }
+      requestAnimationFrame(() => requestAnimationFrame(() => { arc.style.strokeDashoffset = off; }));
+    });
+  }
+
+  // shared token matcher: every whitespace-separated token must be a substring
+  function queryMatch(hay, q) {
+    const tokens = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    return tokens.every(t => hay.includes(t));
   }
 
   // ---- a single item card ------------------------------------------------
@@ -327,7 +677,8 @@
     if (it.location) meta.push("📍 " + esc(it.location));
     if (it.notes) meta.push(esc(it.notes));
 
-    return `<div class="card ${it.status === "done" ? "done" : ""}" style="--mc:${it.accent}">
+    return `<div class="card ${it.status === "done" ? "done" : ""} ${it.id === justCompleted ? "just-done" : ""}" data-id="${it.id}" style="--mc:${it.accent}">
+      ${it.id === justCompleted ? `<svg class="done-check" viewBox="0 0 36 36" aria-hidden="true"><path d="M9 18 l6 6 l12 -13"></path></svg>` : ""}
       <div class="main">
         <div class="title-row">
           <span class="mod" style="--mc:${it.accent}">${esc(it.modShort)}</span>
@@ -341,6 +692,7 @@
         ${subHtml}
         ${it.flag ? `<div class="flag">⚠️ ${esc(it.flag)}</div>` : ""}
         ${meta.length ? `<div class="meta">${meta.map(m => `<span>${m}</span>`).join("")}</div>` : ""}
+        ${it.dueDate ? `<div class="card-actions"><button class="ics-btn" data-id="${it.id}" title="Download a .ics calendar file">📅 Add to calendar</button></div>` : ""}
       </div>
       <div class="right">
         ${dueHtml}
@@ -364,11 +716,49 @@
     { key: "later", label: "Later", cls: "", test: d => d >= 32 },
   ];
 
+  // ---- focus hero (Feature 7) --------------------------------------------
+  function renderHero(it) {
+    if (!it) return `<section class="hero allclear">✨ All clear — nothing open right now. Enjoy it.</section>`;
+    const u = urgency(it);
+    const dueCls = ({ overdue: "overdue", today: "today", soon: "soon" })[u] || "";
+    const days = it.dueDate ? daysUntil(it.dueDate) : null;
+    const ringLbl = !it.dueDate ? "TBC" : (days < 0 ? (-days) + "d" : days === 0 ? "today" : days + "d");
+    const ringSub = !it.dueDate ? "" : (days < 0 ? "late" : days === 0 ? "now" : "left");
+    const dueLine = it.dueDate
+      ? `${fmtDate(it.dueDate)}${hasTime(it) ? " · " + fmtTime(it.dueDate) : ""} — ${countdown(it)}`
+      : (it.dueText || "No date yet");
+    const meta = [esc(it.type)];
+    if (it.weight) meta.push(it.weight + "%");
+    if (it.location) meta.push("📍 " + esc(it.location));
+    return `<section class="hero ${dueCls}" style="--mc:${it.accent}">
+      <div class="hero-body">
+        <div class="hero-kicker">▶ Up next</div>
+        <div class="hero-title-row">
+          <span class="mod" style="--mc:${it.accent}">${esc(it.modShort)}</span>
+          <span class="hero-title">${esc(it.title)}</span>
+        </div>
+        <div class="hero-metaline">${meta.join(" · ")}</div>
+        <div class="hero-due ${dueCls}">${dueLine}</div>
+        <button class="status-btn" data-id="${it.id}" data-s="${it.status}"><span class="dot"></span>${({ todo: "To do", "in-progress": "In progress", done: "Done" })[it.status]}</button>
+      </div>
+      <div class="hero-ring">${ring(elapsedPct(it), it.accent, 96, ringLbl, ringSub)}</div>
+    </section>`;
+  }
+
   function renderTimeline() {
+    // Hero = highest weight×urgency open item (module-scoped, ignores status
+    // filter so it stays a stable “do this now” anchor).
+    let heroPool = items.filter(i => i.status !== "done");
+    if (modFilter !== "all") heroPool = heroPool.filter(i => i.moduleId === modFilter);
+    const heroItem = heroPool.map(i => ({ it: i, s: scoreItem(i) })).sort((a, b) => b.s - a.s)[0];
+    const heroHtml = query ? "" : renderHero(heroItem ? heroItem.it : null);
+
     let pool = items.slice();
     if (modFilter !== "all") pool = pool.filter(i => i.moduleId === modFilter);
     if (statusFilter !== "all") pool = pool.filter(i => i.status === statusFilter);
     if (!showDone) pool = pool.filter(i => i.status !== "done");
+    if (query) pool = pool.filter(i => queryMatch(i._search, query));
+    if (heroItem && !query) pool = pool.filter(i => i.id !== heroItem.it.id);
 
     const dated = pool.filter(i => i.dueDate).sort((a, b) => a.dueDate - b.dueDate);
     const undated = pool.filter(i => !i.dueDate);
@@ -382,9 +772,11 @@
     if (undated.length) {
       html += `<section class="bucket"><h2>📌 No date yet / TBC<span class="bar"></span><span style="color:var(--faint);font-weight:400">${undated.length}</span></h2>${undated.map(itemCard).join("")}</section>`;
     }
-    if (!html) html = `<div class="empty">Nothing here. ${showDone ? "" : "Tick “Show done” to see completed items."}</div>`;
-    content.innerHTML = html;
+    if (!html) html = `<div class="empty">Nothing else here. ${showDone ? "" : "Tick “Show done” to see completed items."}</div>`;
+    content.innerHTML = heroHtml + html;
     wireCards();
+    setupReveal();
+    animateRings();
   }
 
   // ---- modules view ------------------------------------------------------
@@ -402,19 +794,226 @@
       const weeks = m.weeksTotal ? `Weeks ${m.weeksDone}/${m.weeksTotal}` : "—";
       const weekPct = m.weeksTotal ? (m.weeksDone / m.weeksTotal) * 100 : 0;
       html += `<div class="modcard" style="--mc:${m.accent}">
-        <h3>${esc(m.name)}</h3>
-        <div class="code">${esc(m.code)} · ${esc(m.folder)}</div>
+        <div class="modcard-head">
+          <div class="htext">
+            <h3>${esc(m.name)}</h3>
+            <div class="code">${esc(m.code)} · ${esc(m.folder)}</div>
+          </div>
+          ${ring(dPct, m.accent, 66, Math.round(dPct) + "%", "graded")}
+        </div>
         ${m.weeksTotal ? `<div class="row"><span>Teaching</span><span>${weeks}</span></div>
           <div class="seg-bar"><i class="done" style="width:${weekPct}%"></i></div>` : ""}
         <div class="row"><span>Assessment graded-weight</span><span>${doneW}% done${progW ? " · " + progW + "% in progress" : ""}</span></div>
         <div class="seg-bar"><i class="done" style="width:${dPct}%"></i><i class="prog" style="width:${pPct}%"></i></div>
-        <div class="legend"><span><i style="background:var(--done)"></i>done</span><span><i style="background:var(--prog)"></i>in progress</span><span><i style="background:#0e1626;border:1px solid var(--line)"></i>to do</span></div>
+        <div class="legend"><span><i style="background:var(--done)"></i>done</span><span><i style="background:var(--prog)"></i>in progress</span><span><i style="background:var(--track);border:1px solid var(--line)"></i>to do</span></div>
         ${nextItem ? `<div class="note"><b style="color:var(--text)">Next:</b> ${esc(nextItem.title)} — ${fmtDate(nextItem.dueDate)} (${countdown(Object.assign({}, nextItem, { dueDate: new Date(nextItem.due) }))})</div>` : `<div class="note">No upcoming dated items.</div>`}
         ${m.weeksNote ? `<div class="note">${esc(m.weeksNote)}</div>` : ""}
       </div>`;
     });
     html += `</div>`;
     content.innerHTML = html;
+    animateRings();
+  }
+
+  // ---- calendar / month view (Feature 1) ---------------------------------
+  const MONTHS = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+  const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  function renderCalendar() {
+    const y = viewMonth.getFullYear(), mo = viewMonth.getMonth();
+    const first = new Date(y, mo, 1);
+    const lead = (first.getDay() + 6) % 7;            // Mon-first offset
+    const daysInMonth = new Date(y, mo + 1, 0).getDate();
+    const todayKey = startOfToday.getDate();
+    const isThisMonth = y === startOfToday.getFullYear() && mo === startOfToday.getMonth();
+
+    const byDay = {};
+    items.forEach(it => {
+      if (!it.dueDate) return;
+      if (it.dueDate.getFullYear() !== y || it.dueDate.getMonth() !== mo) return;
+      const k = it.dueDate.getDate();
+      (byDay[k] = byDay[k] || []).push(it);
+    });
+
+    let cells = "";
+    DOW.forEach(d => { cells += `<div class="cal-dow">${d}</div>`; });
+    for (let i = 0; i < lead; i++) cells += `<div class="cal-cell empty"></div>`;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const its = (byDay[day] || []).sort((a, b) => a.dueDate - b.dueDate);
+      const isToday = isThisMonth && day === todayKey;
+      const isPast = isThisMonth ? day < todayKey : (new Date(y, mo, day) < startOfToday);
+      const hasOpen = its.some(i => i.status !== "done");
+      const cls = ["cal-cell"];
+      if (isToday) cls.push("today");
+      if (isPast && hasOpen) cls.push("overdue");
+      const pills = its.map(it =>
+        `<button class="cal-pill ${it.status === "done" ? "done" : ""}" style="--mc:${it.accent}" data-id="${it.id}" title="${esc(it.title)}${hasTime(it) ? " · " + fmtTime(it.dueDate) : ""}">${esc(it.modShort)}: ${esc(it.title)}</button>`
+      ).join("");
+      cells += `<div class="${cls.join(" ")}"><div class="cal-date">${day}</div><div class="cal-pills">${pills}</div></div>`;
+    }
+
+    content.innerHTML = `
+      <div class="cal-nav">
+        <button class="cal-btn" data-cal="prev" aria-label="Previous month">‹</button>
+        <div class="cal-title">${MONTHS[mo]} ${y}</div>
+        <button class="cal-btn" data-cal="next" aria-label="Next month">›</button>
+        <span class="spacer"></span>
+        <button class="cal-btn cal-today" data-cal="today">Today</button>
+      </div>
+      <div class="cal-scroll"><div class="cal-grid">${cells}</div></div>`;
+
+    content.querySelectorAll("[data-cal]").forEach(b => b.onclick = () => {
+      const a = b.dataset.cal;
+      if (a === "prev") viewMonth = new Date(y, mo - 1, 1);
+      else if (a === "next") viewMonth = new Date(y, mo + 1, 1);
+      else viewMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      paint(renderCalendar);
+    });
+    content.querySelectorAll(".cal-pill").forEach(p =>
+      p.onclick = () => jumpToItem(p.dataset.id));
+  }
+
+  // Jump from a calendar pill to the item in the timeline, made visible.
+  function jumpToItem(id) {
+    const it = items.find(x => x.id === id);
+    view = "timeline";
+    modFilter = "all";
+    statusFilter = "all";
+    if (it && it.status === "done") showDone = true;
+    el("#view").querySelectorAll("button").forEach(x => x.classList.toggle("active", x.dataset.view === "timeline"));
+    el("#statusfilter").querySelectorAll("button").forEach(x => x.classList.toggle("active", x.dataset.st === "all"));
+    el("#showDone").checked = showDone;
+    renderModFilter();
+    render();
+    const card = content.querySelector('.card[data-id="' + id + '"]');
+    if (card) {
+      card.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+      card.classList.add("pulse");
+      setTimeout(() => card.classList.remove("pulse"), 1600);
+    }
+  }
+
+  // ---- completion celebration (Feature 4) --------------------------------
+  const cvs = el("#confetti");
+  const ctx = cvs.getContext ? cvs.getContext("2d") : null;
+  let confettiParts = [], confettiRunning = false;
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    cvs.width = innerWidth * dpr; cvs.height = innerHeight * dpr;
+    cvs.style.width = innerWidth + "px"; cvs.style.height = innerHeight + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function confettiBurst(x, y, colors, n) {
+    if (reduceMotion || !ctx) return;
+    sizeCanvas();
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = 3 + Math.random() * 6;
+      confettiParts.push({
+        x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 4,
+        g: 0.15 + Math.random() * 0.1, life: 60 + Math.random() * 30, age: 0,
+        size: 5 + Math.random() * 5, rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
+        color: colors[i % colors.length]
+      });
+    }
+    if (!confettiRunning) { confettiRunning = true; requestAnimationFrame(stepConfetti); }
+  }
+  function stepConfetti() {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    confettiParts = confettiParts.filter(p => p.age < p.life);
+    confettiParts.forEach(p => {
+      p.age++; p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vx *= 0.99;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, 1 - p.age / p.life);
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+      ctx.restore();
+    });
+    if (confettiParts.length) requestAnimationFrame(stepConfetti);
+    else { confettiRunning = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
+  }
+  function toast(msg) {
+    const host = el("#toast");
+    const t = document.createElement("div");
+    t.className = "toast-item";
+    t.textContent = msg;
+    host.appendChild(t);
+    requestAnimationFrame(() => t.classList.add("in"));
+    setTimeout(() => { t.classList.remove("in"); setTimeout(() => t.remove(), 400); }, 2600);
+  }
+  function moduleDonePct(moduleId) {
+    const m = modById[moduleId];
+    const its = m.items.map(it => ({ weight: it.weight || 0, status: (store[it.id] && store[it.id].status) || it.status }));
+    const totalW = its.reduce((s, i) => s + i.weight, 0);
+    const doneW = its.filter(i => i.status === "done").reduce((s, i) => s + i.weight, 0);
+    return totalW ? Math.round(doneW / totalW * 100) : 0;
+  }
+  function celebrate(anchorEl, itemId) {
+    const it = items.find(x => x.id === itemId);
+    const mod = it ? modById[it.moduleId] : null;
+    const pct = it ? moduleDonePct(it.moduleId) : 0;
+    const full = pct >= 100 && mod && mod.items.some(x => (x.weight || 0) > 0);
+    toast(full ? `✅ ${mod.short} complete — every graded item done!`
+               : `🎉 ${pct}% of ${mod ? mod.short : "module"} locked in`);
+    justCompleted = itemId;
+    setTimeout(() => { justCompleted = null; }, 900);
+    if (reduceMotion || !anchorEl) return;
+    const r = anchorEl.getBoundingClientRect();
+    const palette = mod ? [mod.accent, "#ffffff", "#fbbf24"] : ["#ffffff", "#fbbf24"];
+    confettiBurst(r.left + r.width / 2, r.top + r.height / 2, palette, full ? 72 : 44);
+  }
+  function subtaskStates(id) {
+    const it = DATA.modules.flatMap(m => m.items).find(x => x.id === id);
+    if (!it.subtasks || !it.subtasks.length) return null;
+    const ov = (store[id] && store[id].sub) || {};
+    return it.subtasks.map((s, i) => (i in ov) ? ov[i] : !!s.done);
+  }
+  function allSubsDone(id) { const st = subtaskStates(id); return !!st && st.every(Boolean); }
+
+  // ---- .ics calendar export (Feature 8) ----------------------------------
+  const icsFmt = d => d.toISOString().replace(/[-:]|\.\d{3}/g, "");   // 20260713T150000Z
+  function icsEscape(s) {
+    return String(s == null ? "" : s)
+      .replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  }
+  function slug(s) {
+    return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "event";
+  }
+  function icsEvent(it) {
+    if (!it.dueDate) return null;
+    const mod = modById[it.moduleId];
+    const L = ["BEGIN:VEVENT", "UID:" + it.id + "@msc-ai-dashboard", "DTSTAMP:" + icsFmt(new Date())];
+    if (hasTime(it)) {
+      L.push("DTSTART:" + icsFmt(it.dueDate));
+      L.push("DTEND:" + icsFmt(new Date(it.dueDate.getTime() + 3600000)));
+    } else {
+      const p2 = n => String(n).padStart(2, "0");
+      L.push("DTSTART;VALUE=DATE:" + it.dueDate.getFullYear() + p2(it.dueDate.getMonth() + 1) + p2(it.dueDate.getDate()));
+    }
+    L.push("SUMMARY:" + icsEscape((mod ? mod.short + ": " : "") + it.title + (it.weight ? " (" + it.weight + "%)" : "")));
+    const desc = [];
+    if (it.type) desc.push("Type: " + it.type);
+    if (it.stage) desc.push(it.stage);
+    if (it.notes) desc.push(it.notes);
+    if (desc.length) L.push("DESCRIPTION:" + icsEscape(desc.join("\n")));
+    if (it.location) L.push("LOCATION:" + icsEscape(it.location));
+    L.push("BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + icsEscape("Reminder: " + it.title), "TRIGGER:-P1D", "END:VALARM");
+    L.push("END:VEVENT");
+    return L.join("\r\n");
+  }
+  function toICS(list) {
+    const events = list.map(icsEvent).filter(Boolean);
+    return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//MSc AI Dashboard//EN", "CALSCALE:GREGORIAN"]
+      .concat(events, ["END:VCALENDAR"]).join("\r\n");
+  }
+  function downloadICS(filename, text) {
+    const blob = new Blob([text], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 120);
   }
 
   // ---- wiring ------------------------------------------------------------
@@ -426,7 +1025,14 @@
         const next = order[(order.indexOf(cur) + 1) % order.length];
         store[btn.dataset.id] = Object.assign({}, store[btn.dataset.id], { status: next });
         save();
+        if (next === "done") celebrate(btn, btn.dataset.id);
         sync();
+      };
+    });
+    content.querySelectorAll(".ics-btn").forEach(b => {
+      b.onclick = () => {
+        const it = items.find(x => x.id === b.dataset.id);
+        if (it) downloadICS(slug(it.title) + ".ics", toICS([it]));
       };
     });
     content.querySelectorAll(".subtasks li").forEach(li => {
@@ -434,12 +1040,21 @@
         const ul = li.parentElement;
         const id = ul.dataset.id;
         const i = +li.dataset.i;
+        const wasComplete = allSubsDone(id);
         const cur = store[id]?.sub || {};
         const base = (DATA.modules.flatMap(m => m.items).find(x => x.id === id).subtasks[i].done) || false;
         const now = (i in cur) ? cur[i] : base;
         cur[i] = !now;
         store[id] = Object.assign({}, store[id], { sub: cur });
         save();
+        if (!wasComplete && allSubsDone(id)) {
+          const it = items.find(x => x.id === id);
+          toast("🎉 All sub-tasks done — " + (it ? it.title : ""));
+          if (!reduceMotion && it) {
+            const r = li.getBoundingClientRect();
+            confettiBurst(r.left + r.width / 2, r.top, [it.accent, "#ffffff", "#fbbf24"], 38);
+          }
+        }
         sync();
       };
     });
@@ -452,28 +1067,138 @@
       it.status = ov.status || (DATA.modules.flatMap(m => m.items).find(x => x.id === it.id).status);
       it.subOverride = ov.sub || null;
     });
-    render();
+    repaint();
   }
 
   function render() {
     renderStats();
     el("#timeline-controls").style.display = view === "timeline" ? "" : "none";
-    if (view === "timeline") renderTimeline(); else renderModules();
+    if (view === "timeline") renderTimeline();
+    else if (view === "calendar") renderCalendar();
+    else renderModules();
   }
+  function repaint() { paint(render); }
+  function switchView(v) {
+    view = v;
+    el("#view").querySelectorAll("button").forEach(x => x.classList.toggle("active", x.dataset.view === v));
+    el("#timeline-controls").style.display = v === "timeline" ? "" : "none";
+    repaint();
+  }
+
+  // ---- command palette (Feature 6) ---------------------------------------
+  let paletteOpen = false, paletteResults = [], activeIndex = 0;
+
+  function buildCommands() {
+    const cmds = [
+      { label: "Go to Timeline", hint: "View", run: () => switchView("timeline") },
+      { label: "Go to Calendar", hint: "View", run: () => switchView("calendar") },
+      { label: "Go to By module", hint: "View", run: () => switchView("modules") },
+      { label: showDone ? "Hide done items" : "Show done items", hint: "Toggle",
+        run: () => { showDone = !showDone; el("#showDone").checked = showDone; switchView("timeline"); } },
+      { label: "Theme: Light", hint: "Theme", run: () => paint(() => setTheme("light")) },
+      { label: "Theme: Dark", hint: "Theme", run: () => paint(() => setTheme("dark")) },
+      { label: "Theme: System", hint: "Theme", run: () => paint(() => setTheme("system")) },
+    ];
+    DATA.modules.forEach(m => cmds.push({
+      label: "Filter: " + m.name, hint: "Module", accent: m.accent,
+      run: () => { modFilter = m.id; renderModFilter(); switchView("timeline"); }
+    }));
+    return cmds;
+  }
+
+  function renderPalette(q) {
+    const ql = q.trim().toLowerCase();
+    const results = [];
+    items.forEach(it => {
+      if (!ql || queryMatch(it._search, ql)) results.push({
+        accent: it.accent, label: it.title,
+        sub: it.modShort + " · " + it.type + (it.dueDate ? " · " + fmtDate(it.dueDate) : ""),
+        run: () => { closePalette(); jumpToItem(it.id); }
+      });
+    });
+    buildCommands().forEach(c => {
+      if (!ql || queryMatch(c.label.toLowerCase(), ql)) results.push({
+        accent: c.accent, label: c.label, sub: c.hint,
+        run: () => { closePalette(); c.run(); }
+      });
+    });
+    paletteResults = results.slice(0, 50);
+    activeIndex = 0;
+    const list = el("#paletteList");
+    if (!paletteResults.length) { list.innerHTML = `<div class="palette-empty">No matches</div>`; return; }
+    list.innerHTML = paletteResults.map((r, i) =>
+      `<div class="palette-row ${i === 0 ? "active" : ""}" data-i="${i}" style="--mc:${r.accent || ""}">
+        <span class="pr-dot"></span><span class="pr-label">${esc(r.label)}</span><span class="pr-sub">${esc(r.sub)}</span></div>`
+    ).join("");
+    list.querySelectorAll(".palette-row").forEach(row => {
+      row.onmousedown = e => { e.preventDefault(); activeIndex = +row.dataset.i; runActive(); };
+    });
+  }
+
+  function highlightActive() {
+    const list = el("#paletteList");
+    [...list.children].forEach((c, i) => c.classList.toggle("active", i === activeIndex));
+    const act = list.children[activeIndex];
+    if (act && act.scrollIntoView) act.scrollIntoView({ block: "nearest" });
+  }
+  function moveActive(d) {
+    if (!paletteResults.length) return;
+    activeIndex = (activeIndex + d + paletteResults.length) % paletteResults.length;
+    highlightActive();
+  }
+  function runActive() { const r = paletteResults[activeIndex]; if (r) r.run(); }
+
+  function openPalette() {
+    paletteOpen = true;
+    el("#palette").hidden = false;
+    const inp = el("#paletteInput");
+    inp.value = "";
+    renderPalette("");
+    requestAnimationFrame(() => inp.focus());
+  }
+  function closePalette() { paletteOpen = false; el("#palette").hidden = true; }
+  function togglePalette() { paletteOpen ? closePalette() : openPalette(); }
+  function focusSearch() {
+    if (view !== "timeline") switchView("timeline");
+    const s = el("#search");
+    if (s) { s.focus(); s.select(); }
+  }
+
+  el("#paletteInput").oninput = e => renderPalette(e.target.value);
+  el("#palette").onclick = e => { if (e.target === el("#palette")) closePalette(); };
+  el("#search").oninput = e => { query = e.target.value; instant = true; renderTimeline(); instant = false; };
+
+  addEventListener("keydown", e => {
+    const tag = e.target.tagName;
+    const typing = tag === "INPUT" || tag === "TEXTAREA";
+    if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) { e.preventDefault(); togglePalette(); return; }
+    if (paletteOpen) {
+      if (e.key === "Escape") { e.preventDefault(); closePalette(); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); moveActive(1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); moveActive(-1); }
+      else if (e.key === "Enter") { e.preventDefault(); runActive(); }
+      return;
+    }
+    if (e.key === "/" && !typing) { e.preventDefault(); focusSearch(); }
+    else if (e.key === "Escape" && el("#search") === document.activeElement) {
+      el("#search").blur();
+      if (query) { query = ""; el("#search").value = ""; paint(renderTimeline); }
+    }
+  });
 
   // ---- static wiring -----------------------------------------------------
   el("#sub").textContent = DATA.meta && DATA.meta.note ? "Tap a status pill to cycle To-do → In progress → Done. Tap sub-tasks to tick them off." : "";
-  el("#view").querySelectorAll("button").forEach(b => b.onclick = () => {
-    view = b.dataset.view;
-    el("#view").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
-    render();
-  });
+  el("#view").querySelectorAll("button").forEach(b => b.onclick = () => switchView(b.dataset.view));
   el("#statusfilter").querySelectorAll("button").forEach(b => b.onclick = () => {
     statusFilter = b.dataset.st;
     el("#statusfilter").querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
-    renderTimeline();
+    paint(renderTimeline);
   });
-  el("#showDone").onchange = e => { showDone = e.target.checked; renderTimeline(); };
+  el("#showDone").onchange = e => { showDone = e.target.checked; paint(renderTimeline); };
+  document.querySelectorAll("#themeseg button").forEach(b =>
+    b.onclick = () => paint(() => setTheme(b.dataset.themeChoice)));
+  applyTheme(themeChoice);
+  el("#exportAllBtn").onclick = () => downloadICS("msc-ai-deadlines.ics", toICS(items.filter(i => i.dueDate)));
   el("#resetBtn").onclick = () => {
     if (confirm("Clear all status changes and sub-task ticks saved on this device?")) {
       store = {}; save(); sync();
